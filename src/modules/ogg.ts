@@ -4,7 +4,7 @@ import installer from '@ffmpeg-installer/ffmpeg'
 import { createWriteStream } from 'fs'
 import { dirname, resolve } from 'path'
 import { fileURLToPath } from 'url'
-import { removeFile } from './utils.js'
+import { getErrorMessage, removeFile } from './utils.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -13,7 +13,7 @@ class OggConvertor {
 		ffmpeg.setFfmpegPath(installer.path)
 	}
 
-	toMp3(input, output) {
+	toMp3(input: string, output: string) {
 		try {
 			const outputPath = resolve(dirname(input), `${output}.mp3`)
 			return new Promise((resolve, reject) => {
@@ -27,14 +27,18 @@ class OggConvertor {
 					.on('error', err => reject(err.message))
 					.run()
 			})
-		} catch (e) {
-			console.log('Error while creating mp3', e.message)
+		} catch (error) {
+			console.log(`Error while creating mp3`, getErrorMessage(error))
 		}
 	}
 
-	async create(url, filename) {
+	async create(url: string, filename: string) {
 		try {
-			const oggPath = resolve(__dirname, '../voices', `${filename}.ogg`)
+			const oggPath = resolve(
+				__dirname,
+				'../../voices',
+				`${filename}.ogg`
+			)
 			const response = await axios({
 				method: 'get',
 				url,
@@ -45,8 +49,8 @@ class OggConvertor {
 				response.data.pipe(stream)
 				stream.on('finish', () => resolve(oggPath))
 			})
-		} catch (e) {
-			console.log('Error while creating ogg', e.message)
+		} catch (error) {
+			console.log(`Error while creating ogg`, getErrorMessage(error))
 		}
 	}
 }
